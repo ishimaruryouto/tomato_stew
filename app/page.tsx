@@ -1,8 +1,7 @@
-import Image from "next/image";
+import MapScreen from '@/app/components/MapScreen';
 
 export default function Home() {
-  return (
-    <>
-    </>
-  );
+  return <div className="w-full">
+    <MapScreen />
+  </div>;
 }
