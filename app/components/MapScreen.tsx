@@ -228,9 +228,9 @@ export default function MapScreen() {
 				</div>
 
 				{isInRange && (
-					<div className="pointer-events-auto absolute left-1/2 top-24 w-[260px] -translate-x-1/2 rounded-2xl bg-white/95 p-3 shadow-lg">
+					<div className="pointer-events-auto absolute left-1/2 top-40 w-80 h-25 -translate-x-1/2 rounded-2xl bg-white/95 px-3 shadow-lg">
 						<div className="flex items-start gap-3">
-							<div className="flex-1 text-xs leading-relaxed text-slate-800">
+							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>梅田に到着しました。</p>
 								<p>みんなの投稿を見てみよう</p>
 							</div>
