@@ -15,3 +15,8 @@
 .text-main-color {
   color: var(--color-text);
 }
+.input-button-style {
+  width: 300px;
+  height: 56px;
+  border-radius: 50%;
+}
