@@ -12,10 +12,10 @@ import NavigationBar from './NavigationBar';
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
 const DESTINATION = {
-	lng: 135.4959,
-	lat: 34.7024,
-	radiusInKm: 1,
-	zoom: 14,
+	lng: 136.9857,
+	lat: 35.1318,
+	radiusInKm: 0.5,
+	zoom: 16,
 };
 
 export default function MapScreen() {
@@ -229,13 +229,22 @@ export default function MapScreen() {
 
 				{isInRange && (
 					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-2xl bg-white/95 px-3 shadow-lg">
-						<div className="flex items-start gap-3">
+						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>梅田に到着しました。</p>
 								<p>みんなの投稿を見てみよう</p>
 							</div>
-							<div className="h-12 w-12 overflow-hidden rounded-xl bg-sky-200">
-								<div className="h-full w-full bg-gradient-to-br from-sky-300 to-sky-500" />
+							{/* ポラロイドの部分 */}
+							<div className="h-21 w-13 rounded-b-sm drop-shadow-card-small">
+								<div className="h-full w-full overflow-hidden rounded-b-sm bg-main-color pt-1.25 px-1">
+									<Image
+										src="/img/group_photo.webp"
+										alt="group_photo"
+										width={62}
+										height={45}
+										className="object-cover"
+									/>
+								</div>
 							</div>
 						</div>
 					</div>

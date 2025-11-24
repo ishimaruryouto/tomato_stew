@@ -1,22 +1,35 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* 基本のテキストカラー */
-  --color-text: #222222;
+	--background: #fefefe;
+	--foreground: #171717;
+	/* 基本のテキストカラー */
+	--color-text: #222222;
 }
 
 /* 基本フォントサイズ */
 .main-font-size {
-  font-size: 16px;
+	font-size: 16px;
 }
 
 .text-main-color {
-  color: var(--color-text);
+	color: var(--color-text);
 }
+
 .input-button-style {
-  width: 300px;
-  height: 56px;
-  border-radius: 50%;
+	width: 300px;
+	height: 56px;
+	border-radius: 50%;
+}
+
+.bg-main-color {
+	background-color: var(--background);
+}
+
+.drop-shadow-button {
+	filter: drop-shadow(0 2px 2px rgba(34, 34, 34, 0.2));
+}
+
+.drop-shadow-card-small {
+	filter: drop-shadow(0 0 2px rgba(34, 34, 34, 0.2));
 }
