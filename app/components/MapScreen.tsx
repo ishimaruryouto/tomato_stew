@@ -316,12 +316,12 @@ export default function MapScreen() {
 					</div>
 				</div>
 
-				<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-700">
+				<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-３00">
 					{locationError && <p className="mb-1 text-yellow-700">⚠️ {locationError}</p>}
 					<p>
 						{isInRange
-							? '指定範囲内です。カメラボタンから撮影できます。'
-							: '大阪駅から1km以内に移動してください。'}
+							? 'あなたの素敵な写真をみんなにシェアしよう！'
+							: '指定された場所で写真を撮ろう！'}
 					</p>
 				</div>
 			</div>
