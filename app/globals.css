@@ -26,6 +26,11 @@
 	background-color: var(--background);
 }
 
+/* ドロップシャドウ関係 */
+.drop-shadow-map {
+	filter: drop-shadow(0 6px 10px rgba(34, 34, 34, 0.2));
+}
+
 .drop-shadow-button {
 	filter: drop-shadow(0 2px 2px rgba(34, 34, 34, 0.2));
 }

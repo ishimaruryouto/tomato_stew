@@ -12,8 +12,8 @@ import NavigationBar from './NavigationBar';
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
 const DESTINATION = {
-	lng: 136.9857,
-	lat: 35.1318,
+	lng: 137.9089,
+	lat: 35.7401,
 	radiusInKm: 0.5,
 	zoom: 16,
 };
@@ -228,7 +228,7 @@ export default function MapScreen() {
 				</div>
 
 				{isInRange && (
-					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-2xl bg-white/95 px-3 shadow-lg">
+					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map">
 						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>梅田に到着しました。</p>
@@ -251,20 +251,27 @@ export default function MapScreen() {
 				)}
 
 				{isInRange && (
-					<div className="pointer-events-auto absolute left-1/2 bottom-32 w-[280px] -translate-x-1/2 rounded-3xl bg-white/95 p-3 shadow-xl">
-						<div className="flex items-center gap-3">
-							<div className="h-16 w-16 overflow-hidden rounded-2xl bg-sky-300">
-								<div className="h-full w-full bg-gradient-to-br from-sky-400 to-sky-600" />
-							</div>
-							<div className="flex-1">
-								<div className="flex items-center justify-between text-[11px] text-slate-500">
-									<span>梅田駅</span>
-									<span>○○人が投稿</span>
+					<div className="pointer-events-auto absolute left-1/2 bottom-32 w-68 h-28 -translate-x-1/2 bg-main-color rounded-xl drop-shadow-map">
+						<div className="relative h-full w-full">
+							{/* 左の写真（左右padding 16px、上に40pxはみ出し） */}
+							<div className="absolute left-4 -top-10">
+								<div className="h-20 w-20 overflow-hidden rounded-xl">
+									<Image
+										src="/img/umeda_hankyu.webp"
+										alt="umeda"
+										width={1000}
+										height={1000}
+										className="h-full w-full object-cover"
+									/>
 								</div>
-								<p className="text-sm font-semibold text-slate-900">梅田駅</p>
-								<p className="text-[11px] text-slate-500">Umeda station</p>
 							</div>
-							<div className="text-xl text-slate-400">↻</div>
+							<div className="absolute right-6 top-2">
+								<p className="text-base tracking-tighter">○○人が投稿</p>
+							</div>
+							<div className="absolute left-4 top-12">
+								<p className="text-2xl font-regular tracking-tighter">梅田駅</p>
+								<p className="text-base font-regular text-slate-300">Umeda station</p>
+							</div>
 						</div>
 					</div>
 				)}
