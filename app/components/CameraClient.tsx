@@ -28,34 +28,33 @@ export default function CameraClient({ open, onClose, onCapture }: CameraClientP
 	}
 
 	return (
-		<section className="w-full max-w-md mx-auto bg-white rounded-lg shadow p-4 flex flex-col gap-4 mt-6">
-			<div className="w-full border rounded overflow-hidden bg-black">
-				<Webcam
-					ref={webcamRef}
-					audio={false}
-					screenshotFormat="image/jpeg"
-					videoConstraints={{
-						facingMode: 'environment', // 背面カメラ要求
-					}}
-					style={{ width: '100%', height: 'auto' }}
-				/>
-			</div>
+		<div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+			<section className="w-full max-w-md mx-auto bg-white rounded-lg shadow p-4 flex flex-col gap-4">
+				<div className="w-full border rounded overflow-hidden bg-black">
+					<Webcam
+						ref={webcamRef}
+						audio={false}
+						screenshotFormat="image/jpeg"
+						videoConstraints={{ facingMode: 'environment' }}
+						style={{ width: '100%', height: 'auto' }}
+					/>
+				</div>
 
-			<div className="flex gap-2 justify-center">
-				<button
-					onClick={handleTakePhoto}
-					className="px-4 py-2 rounded bg-green-600 text-white text-lg hover:bg-green-700"
-				>
-					撮影
-				</button>
-
-				<button
-					onClick={onClose}
-					className="px-4 py-2 rounded bg-red-600 text-white text-lg hover:bg-red-700"
-				>
-					閉じる
-				</button>
-			</div>
-		</section>
+				<div className="flex gap-2 justify-center">
+					<button
+						onClick={handleTakePhoto}
+						className="px-4 py-2 rounded bg-green-600 text-white text-lg hover:bg-green-700"
+					>
+						撮影
+					</button>
+					<button
+						onClick={onClose}
+						className="px-4 py-2 rounded bg-red-600 text-white text-lg hover:bg-red-700"
+					>
+						閉じる
+					</button>
+				</div>
+			</section>
+		</div>
 	);
 }

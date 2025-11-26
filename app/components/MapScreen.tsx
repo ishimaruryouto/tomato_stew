@@ -12,8 +12,8 @@ import NavigationBar from './NavigationBar';
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
 const DESTINATION = {
-	lng: 137.9089,
-	lat: 35.7401,
+	lng: 135.5034,
+	lat: 34.7060,
 	radiusInKm: 0.5,
 	zoom: 16,
 };
