@@ -116,7 +116,7 @@ export default function Frend() {
                     <div className="flex items-center justify-center gap-6 mt-6">
                         <div className="ml-12">
                             <h1>{loginUser?.name ?? "ゲスト"}</h1>
-                            <p>@{loginUser?.id ?? "no-id"}</p>
+                            {/* <p>@{loginUser?.id ?? "no-id"}</p> */}
                         </div>
                         {/* プロフィール編集ボタン */}
                         <div>
