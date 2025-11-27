@@ -11,12 +11,40 @@ import NavigationBar from './NavigationBar';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
-const DESTINATION = {
-	lng: 135.5034,
-	lat: 34.7060,
-	radiusInKm: 0.5,
-	zoom: 16,
+const DEST_RADIUS_IN_KM = 0.3;
+const DEFAULT_ZOOM = 16;
+
+type Destination = {
+	id: string;
+	lng: number;
+	lat: number;
+	nameJa: string;
+	nameEn: string;
 };
+
+const DESTINATIONS: Destination[] = [
+	{
+		id: 'nakazakicho',
+		lng: 135.5052,
+		lat: 34.707,
+		nameJa: '中崎町',
+		nameEn: 'Nakazakicho',
+	},
+	{
+		id: 'tukamoto',
+		lng: 135.4692,
+		lat: 34.7127,
+		nameJa: '塚本',
+		nameEn: 'Tsukamoto',
+	},
+	{
+		id: 'skybilding',
+		lng: 135.4895,
+		lat: 34.7053,
+		nameJa: '梅田スカイビル',
+		nameEn: 'Umeda Sky Building',
+	},
+];
 
 export default function MapScreen() {
 	const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +60,8 @@ export default function MapScreen() {
 	const [showCamera, setShowCamera] = useState(false);
 	const [capturedImg, setCapturedImg] = useState<string | null>(null);
 
+	const [currentDestination, setCurrentDestination] = useState<Destination | null>(null);
+
 	// Map初期化
 	useEffect(() => {
 		if (mapRef.current || !mapContainerRef.current) return;
@@ -39,59 +69,76 @@ export default function MapScreen() {
 		const map = new mapboxgl.Map({
 			container: mapContainerRef.current,
 			style: 'mapbox://styles/mapbox/streets-v12',
-			center: [DESTINATION.lng, DESTINATION.lat],
-			zoom: DESTINATION.zoom,
+			center: [DESTINATIONS[0].lng, DESTINATIONS[0].lat],
+			zoom: DEFAULT_ZOOM,
 		});
 
 		mapRef.current = map;
 
 		map.on('load', () => {
-			const center: [number, number] = [DESTINATION.lng, DESTINATION.lat];
-
-			const circle = turf.circle(center, DESTINATION.radiusInKm, {
-				steps: 64,
-				units: 'kilometers',
+			const destinationCircles = DESTINATIONS.map((dest) => {
+				const center: [number, number] = [dest.lng, dest.lat];
+				const circle = turf.circle(center, DEST_RADIUS_IN_KM, {
+					steps: 64,
+					units: 'kilometers',
+				});
+				return { dest, circle };
 			});
 
-			// ✅ 目的地マーカー（黄色ピン）
-			destinationMarkerRef.current = new mapboxgl.Marker({
-				color: '#FFD600', // 黄色
-			})
-				.setLngLat(center)
-				.addTo(map);
+			destinationCircles.forEach(({ dest, circle }) => {
+				const center: [number, number] = [dest.lng, dest.lat];
+				// ✅ 目的地マーカー（黄色ピン）
+				destinationMarkerRef.current = new mapboxgl.Marker({
+					color: '#FFD600', // 黄色
+				})
+					.setLngLat(center)
+					.addTo(map);
 
-			// 円
-			map.addSource('range-circle', {
-				type: 'geojson',
-				data: circle,
-			});
+				const sourceId = `range-circle-${dest.id}`;
+				const fillLayerId = `range-circle-fill-${dest.id}`;
+				const borderLayerId = `range-circle-border-${dest.id}`;
+				// 円
+				map.addSource(sourceId, {
+					type: 'geojson',
+					data: circle,
+				});
 
-			map.addLayer({
-				id: 'range-circle-fill',
-				type: 'fill',
-				source: 'range-circle',
-				paint: {
-					'fill-color': '#4264fb',
-					'fill-opacity': 0.25,
-				},
-			});
+				map.addLayer({
+					id: fillLayerId,
+					type: 'fill',
+					source: sourceId,
+					paint: {
+						'fill-color': '#4264fb',
+						'fill-opacity': 0.25,
+					},
+				});
 
-			map.addLayer({
-				id: 'range-circle-border',
-				type: 'line',
-				source: 'range-circle',
-				paint: {
-					'line-color': '#4264fb',
-					'line-width': 2,
-				},
+				map.addLayer({
+					id: borderLayerId,
+					type: 'line',
+					source: sourceId,
+					paint: {
+						'line-color': '#4264fb',
+						'line-width': 2,
+					},
+				});
 			});
 
 			const updateUserLocation = (location: [number, number]) => {
 				setUserLocation(location);
 
 				const point = turf.point(location);
-				const inside = turf.booleanPointInPolygon(point, circle);
-				setIsInRange(inside);
+				const hit = destinationCircles.find(({ circle }) =>
+					turf.booleanPointInPolygon(point, circle),
+				);
+
+				if (hit) {
+					setIsInRange(true);
+					setCurrentDestination(hit.dest);
+				} else {
+					setIsInRange(false);
+					setCurrentDestination(null);
+				}
 
 				// ✅ ユーザー現在地マーカー（赤ピン）
 				if (userMarkerRef.current) {
@@ -203,10 +250,10 @@ export default function MapScreen() {
 
 	const handleBack = () => {
 		if (!mapRef.current) return;
-		const center: [number, number] = userLocation ?? [DESTINATION.lng, DESTINATION.lat];
+		const center: [number, number] = userLocation ?? [DESTINATIONS[0].lng, DESTINATIONS[0].lat];
 		mapRef.current.easeTo({
 			center,
-			zoom: DESTINATION.zoom,
+			zoom: DEFAULT_ZOOM,
 			duration: 500,
 		});
 	};
@@ -231,7 +278,7 @@ export default function MapScreen() {
 					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map">
 						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
-								<p>梅田に到着しました。</p>
+								<p>{currentDestination?.nameJa}に到着しました。</p>
 								<p>みんなの投稿を見てみよう</p>
 							</div>
 							{/* ポラロイドの部分 */}
@@ -269,8 +316,12 @@ export default function MapScreen() {
 								<p className="text-base tracking-tighter">○○人が投稿</p>
 							</div>
 							<div className="absolute left-4 top-12">
-								<p className="text-2xl font-regular tracking-tighter">梅田駅</p>
-								<p className="text-base font-regular text-slate-300">Umeda station</p>
+								<p className="text-2xl font-regular tracking-tighter">
+									{currentDestination?.nameJa}
+								</p>
+								<p className="text-base font-regular text-slate-300">
+									{currentDestination?.nameEn}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -316,7 +367,7 @@ export default function MapScreen() {
 					</div>
 				</div>
 
-				<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-３00">
+				<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-300">
 					{locationError && <p className="mb-1 text-yellow-700">⚠️ {locationError}</p>}
 					<p>
 						{isInRange
