@@ -2,9 +2,11 @@
 
 :root {
 	--background: #fefefe;
+	--color-accent: #ffcc01;
 	--foreground: #171717;
 	/* 基本のテキストカラー */
 	--color-text: #222222;
+	--color-text-wh: #fefefe;
 }
 
 /* 基本フォントサイズ */
@@ -16,6 +18,10 @@
 	color: var(--color-text);
 }
 
+.text-main-color-wh {
+	color: var(--color-text-wh);
+}
+
 .input-button-style {
 	width: 300px;
 	height: 56px;
@@ -24,6 +30,10 @@
 
 .bg-main-color {
 	background-color: var(--background);
+}
+
+.bg-accent-color {
+	background-color: var(--color-accent);
 }
 
 /* ドロップシャドウ関係 */
