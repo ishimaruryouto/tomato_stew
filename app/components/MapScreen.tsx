@@ -304,8 +304,8 @@ export default function MapScreen() {
 							<div className="absolute left-4 -top-10">
 								<div className="h-20 w-20 overflow-hidden rounded-xl">
 									<Image
-										src="/img/umeda_hankyu.webp"
-										alt="umeda"
+										src="/img/nakazakicho.webp"
+										alt="nakazakicho"
 										width={1000}
 										height={1000}
 										className="h-full w-full object-cover"
