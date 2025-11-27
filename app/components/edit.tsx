@@ -26,8 +26,8 @@ export default function edit() {
 
     return (
         <>
-            <div className="">
-                <div className="flex mt-6">
+            <div className="h-full overflow-hidden">
+                <div className="flex mt-6 px-6">
                     <svg
                         className="ml-auto"
                         xmlns="http://www.w3.org/2000/svg"
@@ -51,23 +51,23 @@ export default function edit() {
                 {/* 線（灰色） */}
                 <div className="h-0.5 bg-[#222]/20 mt-6 mb-2 -mx-6"></div>
                 <div className="flex w-full ">
-                    <p className="w-[30%]">名前</p>
+                    <p className="w-[30%] pl-6">名前</p>
                     <p className="w-[70%]">{loginUser?.name ?? "ゲスト"}</p>
                 </div>
                 {/* 線（灰色） */}
                 <div className="h-0.5 bg-[#222]/20 mt-2 ml-[30%] -mr-6"></div>
                 <div className="flex ">
-                    <p className="w-[30%]">ID</p>
-                    <p className="w-[70%]">@{loginUser?.id ?? "no-id"}</p>
+                    {/* <p className="w-[30%]">ID</p>
+                    <p className="w-[70%]">@{loginUser?.id ?? "no-id"}</p> */}
                 </div>
                 {/* 線（灰色） */}
-                <div className="h-0.5 bg-[#222]/20 mt-2 ml-[30%] -mr-6"></div>
+                {/* <div className="h-0.5 bg-[#222]/20 mt-2 ml-[30%] -mr-6"></div> */}
 
                 {/* 線（黒色） */}
                 <div className=" h-0.5 bg-black mt-7.5 mb-2 -mx-6"></div>
 
                 <h2 className="text-center mt-12">猫ちゃんを選ぶ</h2>
-                <div className="flex justify-between mt-5 ">
+                <div className="flex justify-between mt-5 px-6">
                     <Image src="/img/black_cat.png" alt="黒猫の顔のイラスト" width={80} height={60} />
                     <Image src="/img/white_cat.png" alt="白猫の顔のイラスト" width={80} height={60} />
                     <Image src="/img/brown_cat.png" alt="茶猫の顔のイラスト" width={80} height={60} />
@@ -83,7 +83,7 @@ export default function edit() {
 
                 <button
                     type="button"
-                    className="w-50 h-12 rounded-full bg-[#FFCC01] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] mx-auto mt-12.5 block"
+                    className="w-50 h-12 rounded-full bg-[#FFCC01] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] mx-auto mt-12.5 mb-2 block"
                 >
                     決定する
                 </button>
