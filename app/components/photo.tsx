@@ -2,19 +2,36 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { useEffect, useState } from "react";
 type PhotoData = {
     src: string;
     station: string;
     comment: string;
 };
-
 export default function Frend() {
 
+    const [loginUser, setLoginUser] = useState<{ name: string; id: string } | null>(null);
     const [modalData, setModalData] = useState<PhotoData | null>(null);
     const closeModal = () => setModalData(null);
 
-    // モーダルに渡すデータ（写真4枚ぶん）
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setLoginUser({
+                    name: user.displayName ?? "名無しさん",
+                    id: user.uid,
+                });
+            } else {
+                setLoginUser(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     const photos: PhotoData[] = [
         {
             src: "/img/photo_img.png",
@@ -98,14 +115,14 @@ export default function Frend() {
                 <div className="text-center">
                     <div className="flex items-center justify-center gap-6 mt-6">
                         <div className="ml-12">
-                            <h1>ユーザーネーム</h1>
-                            <p>@tomato</p>
+                            <h1>{loginUser?.name ?? "ゲスト"}</h1>
+                            <p>@{loginUser?.id ?? "no-id"}</p>
                         </div>
                         {/* プロフィール編集ボタン */}
                         <div>
                             <Link href="/profile/edit">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="11.625" fill="#FEFEFE" stroke="#222222" stroke-width="0.75" />
+                                    <circle cx="12" cy="12" r="11.625" fill="#FEFEFE" stroke="#222222" strokeWidth="0.75" />
                                     <mask id="mask0_862_221" className="mask-type:luminance" maskUnits="userSpaceOnUse" x="4" y="4">
                                         <path d="M20 4H4V20H20V4Z" fill="white" />
                                     </mask>
