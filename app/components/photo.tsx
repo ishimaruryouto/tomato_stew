@@ -66,7 +66,7 @@ export default function Frend() {
                         className="relative"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="bg-white w-60.5 h-96.25 mx-auto ounded-bl-[6px] rounded-br-[6px] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)]">
+                        <div className="bg-white w-60.5 h-96.25 mx-auto rounded-bl-[6px] rounded-br-[6px] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)]">
                             <Image
                                 src={modalData.src}
                                 alt="photo"
