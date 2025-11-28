@@ -29,14 +29,14 @@ export default function CameraClient({ open, onClose, onCapture }: CameraClientP
 
 	return (
 		<div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-			<section className="w-full max-w-md mx-auto bg-white rounded-lg shadow p-4 flex flex-col gap-4">
-				<div className="w-full border rounded overflow-hidden bg-black">
+			<section className="w-full h-full mx-auto bg-white rounded-lg shadow pt-50 flex flex-col gap-4">
+				<div className="w-73 h-98.5 mx-auto border-none rounded-3xl overflow-hidden bg-black shadow-[inset_0_0_20px_0_rgba(34,34,34,0.20)]">
 					<Webcam
 						ref={webcamRef}
 						audio={false}
 						screenshotFormat="image/jpeg"
 						videoConstraints={{ facingMode: 'environment' }}
-						style={{ width: '100%', height: 'auto' }}
+						style={{ width: '100%', height: '100%', objectFit: 'cover' }}
 					/>
 				</div>
 

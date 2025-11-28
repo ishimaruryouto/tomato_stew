@@ -8,6 +8,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css'; // ← 追加：マーカー表示に必須
 import * as turf from '@turf/turf';
 import CameraClient from './CameraClient';
+import LocationDetail from './LocationDetail';
+import PhotoDecoration from './PhotoDecoration';
 import NavigationBar from './NavigationBar';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
@@ -63,6 +65,8 @@ export default function MapScreen() {
 
 	const [showCamera, setShowCamera] = useState(false);
 	const [capturedImg, setCapturedImg] = useState<string | null>(null);
+	const [showLocationDetail, setShowLocationDetail] = useState(false);
+	const [cameraOpenedFromLocationDetail, setCameraOpenedFromLocationDetail] = useState(false);
 
 	const [currentDestination, setCurrentDestination] = useState<Destination | null>(null);
 
@@ -239,12 +243,35 @@ export default function MapScreen() {
 	const handlePhotoButton = () => {
 		if (!isInRange) return;
 		setCapturedImg(null);
+		// カメラを直接開くのではなく、まずロケーション詳細を表示する
+		setShowLocationDetail(true);
+		setShowCamera(false);
+	};
+
+	const handleCloseLocationDetail = () => {
+		setShowLocationDetail(false);
+	};
+
+	const handleStartCapture = () => {
+		// LocationDetail を閉じてカメラ UI を開く
+		setShowLocationDetail(false);
 		setShowCamera(true);
+		setCameraOpenedFromLocationDetail(true);
+	};
+
+	const handleCameraClose = () => {
+		setShowCamera(false);
+		if (cameraOpenedFromLocationDetail) {
+			setShowLocationDetail(true);
+			setCameraOpenedFromLocationDetail(false);
+		}
 	};
 
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
 		setShowCamera(false);
+		// キャプチャ完了では LocationDetail に自動で戻さない
+		setCameraOpenedFromLocationDetail(false);
 	};
 
 	const handleRetake = () => {
@@ -332,53 +359,53 @@ export default function MapScreen() {
 				)}
 
 				{capturedImg && (
-					<div className="pointer-events-auto absolute inset-x-4 bottom-32 rounded-2xl bg-white/95 p-3 shadow-xl">
-						<p className="mb-1 text-center text-[11px] text-gray-500">撮影結果プレビュー</p>
+					<div className="w-full h-full pointer-events-auto absolute top-0 left-0 inset-x-4 bg-main-color pt-6 px-6 flex flex-col items-center">
 						<div className="flex justify-center">
-							<Image
+							<PhotoDecoration
 								src={capturedImg}
-								alt="captured"
-								width={260}
-								height={360}
-								className="rounded-xl object-cover"
+								onRetake={handleRetake}
+								onClose={() => setCapturedImg(null)}
 							/>
-						</div>
-						<div className="mt-2 flex justify-center">
-							<button
-								onClick={handleRetake}
-								className="rounded-full bg-blue-500 px-4 py-1 text-xs font-medium text-white hover:bg-blue-600"
-							>
-								撮り直す
-							</button>
 						</div>
 					</div>
 				)}
 
-				<CameraClient
-					open={showCamera}
-					onClose={() => setShowCamera(false)}
-					onCapture={handleCapture}
-				/>
+				<CameraClient open={showCamera} onClose={handleCameraClose} onCapture={handleCapture} />
 
-				<div className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2">
-					<div className="pointer-events-auto">
-						<NavigationBar
-							onBack={handleBack}
-							onCamera={handlePhotoButton}
-							onProfile={handleProfile}
-							isCameraDisabled={!isInRange}
+				{showLocationDetail && (
+					<div className="pointer-events-auto absolute inset-0 flex items-center justify-center">
+						<LocationDetail
+							onClose={handleCloseLocationDetail}
+							nameJa={currentDestination?.nameJa ?? null}
+							nameEn={currentDestination?.nameEn ?? null}
+							onStartCapture={handleStartCapture}
 						/>
 					</div>
-				</div>
+				)}
 
-				<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-300">
-					{locationError && <p className="mb-1 text-yellow-700">⚠️ {locationError}</p>}
-					<p>
-						{isInRange
-							? 'あなたの素敵な写真をみんなにシェアしよう！'
-							: '指定された場所で写真を撮ろう！'}
-					</p>
-				</div>
+				{!showLocationDetail && !capturedImg && (
+					<div className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2">
+						<div className="pointer-events-auto">
+							<NavigationBar
+								onBack={handleBack}
+								onCamera={handlePhotoButton}
+								onProfile={handleProfile}
+								isCameraDisabled={!isInRange}
+							/>
+						</div>
+					</div>
+				)}
+
+				{!showLocationDetail && !capturedImg && (
+					<div className="pointer-events-none absolute inset-x-4 bottom-10 text-center text-[10px] text-slate-300">
+						{locationError && <p className="mb-1 text-yellow-700">⚠️ {locationError}</p>}
+						<p>
+							{isInRange
+								? 'あなたの素敵な写真をみんなにシェアしよう！'
+								: '指定された場所で写真を撮ろう！'}
+						</p>
+					</div>
+				)}
 			</div>
 		</section>
 	);
