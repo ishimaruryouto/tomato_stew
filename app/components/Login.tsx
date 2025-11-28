@@ -1,10 +1,13 @@
 "use client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import { useState } from "react";
 import { initializeApp } from "firebase/app";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebase";
-import Image from "next/image";
 export default function Login() {
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -37,7 +40,7 @@ export default function Login() {
 
     return (
         <>
-            <Image src="/img/tail.png" alt="猫の尻尾" width={200} height={110} className="ml-6" />
+            <Image src="/img/tail.png" alt="猫の尻尾" width={120} height={60} className="ml-6" />
             <div className="w-[195px] h-[195px] bg-gray-500 rounded-full mx-auto"></div>
             <div className="block w-[300px] mx-auto">
                 <form
@@ -60,7 +63,7 @@ export default function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <button type="submit" className="w-[300px] h-14 bg-[#FFCC01] rounded-full mt-12">ログイン</button>
+                    <button type="submit" className="w-[300px] h-14 bg-[#FFCC01] rounded-full mt-12" onClick={() => { router.push("/") }}>ログイン</button>
                 </form>
             </div>
         </>

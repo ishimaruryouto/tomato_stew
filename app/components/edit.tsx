@@ -1,12 +1,14 @@
 "use client";
 import Image from 'next/image';
 
+import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useEffect, useState } from "react";
 
 export default function edit() {
 
+    const router = useRouter();
     const [loginUser, setLoginUser] = useState<{ name: string; id: string } | null>(null);
 
     useEffect(() => {
@@ -26,7 +28,7 @@ export default function edit() {
 
     return (
         <>
-            <div className="h-full overflow-hidden">
+            <div className="h-full overflow-hidden" onClick={() => { router.push("/profile/photo") }}>
                 <div className="flex mt-6 px-6">
                     <svg
                         className="ml-auto"
