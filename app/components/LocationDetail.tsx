@@ -40,7 +40,7 @@ export default function LocationDetail({
 					</button>
 
 					{/* サムネイルスタック */}
-					<div className="absolute bottom-6 right-4 flex flex-col gap-2">
+					{/* <div className="absolute bottom-6 right-4 flex flex-col gap-2">
 						<div className="h-12 w-8 overflow-hidden rounded-md shadow-md">
 							<Image
 								src="/img/umeda_hankyu.webp"
@@ -71,7 +71,7 @@ export default function LocationDetail({
 								+20
 							</div>
 						</div>
-					</div>
+					</div> */}
 				</div>
 
 				{/* 場所名フッター */}
