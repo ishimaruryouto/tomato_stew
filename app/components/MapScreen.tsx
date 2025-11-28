@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation'
 import Image from 'next/image';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css'; // ← 追加：マーカー表示に必須
@@ -49,6 +50,9 @@ const DESTINATIONS: Destination[] = [
 ];
 
 export default function MapScreen() {
+
+	const router = useRouter();
+
 	const mapContainerRef = useRef<HTMLDivElement | null>(null);
 	const mapRef = useRef<mapboxgl.Map | null>(null);
 	const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
@@ -302,7 +306,7 @@ export default function MapScreen() {
 				</div>
 
 				{isInRange && (
-					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map">
+					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map" onClick={() => { router.push("/otherpost") }}>
 						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>{currentDestination?.nameJa}に到着しました。</p>

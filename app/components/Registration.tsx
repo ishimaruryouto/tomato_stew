@@ -5,8 +5,13 @@ import { initializeApp } from "firebase/app";
 
 import Image from "next/image";
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Registration() {
+
+    const router = useRouter();
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -34,6 +39,7 @@ export default function Registration() {
                 });
             }
             alert("登録成功したで--------------")
+            router.push("/");
         } catch (error) {
             console.error("登録できんかった:", error);
             alert("あら、登録できてないわぁ")
