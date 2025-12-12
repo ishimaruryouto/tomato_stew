@@ -61,24 +61,14 @@ export default function edit() {
                         className="absolute top-16 right-20"
                     />
 
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center justify-center mt-15">
                         <h1>プロフィール編集</h1>
                         <div className="mt-6 w-29 h-30 rounded-full bg-white flex justify-center items-center shadow-[0_4px_4px_0_rgba(0,0,0,0.25)]">
                             <Image src="/img/shisa.png" alt="シーサーの写真" width={110} height={110} className="flex justify-center items-center" />
                         </div>
                         <p className="mt-4">タップして画像を変更</p>
                     </div>
-                    {/* 線（灰色） */}
-                    <div className="h-0.5 bg-[#222]/20 mt-6 mb-2 -mx-6"></div>
-                    <div className="flex w-full ">
-                        <p className="w-[30%] pl-6">名前</p>
-                        <p className="w-[70%]">{loginUser?.name ?? "ゲスト"}</p>
-                    </div>
-                    {/* 線（灰色） */}
-                    <div className="h-0.5 bg-[#222]/20 mt-2 ml-[30%] -mr-6"></div>
 
-                    {/* 線（黄色） */}
-                    <div className=" h-0.5 bg-[#FFCC01] mt-10 mb-2 -mx-6"></div>
 
                     <div className="border-y-[8px] border-x-[16px] border-[#FFCC01] mt-15">
                         <h2 className="inline-block text-base mt-4 ml-4 border-b-2 border-b-[#FFCC01]">ねこちゃんを選ぶ</h2>
