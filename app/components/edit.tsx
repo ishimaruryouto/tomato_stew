@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useEffect, useState } from "react";
+import { useCatTheme } from "../providers/catThemeProvider";
+import { CatKey } from "../theme/catTheme";
 
 export default function edit() {
 
     const router = useRouter();
     const [loginUser, setLoginUser] = useState<{ name: string; id: string } | null>(null);
+
+    const { selectedCat, setSelectedCat, theme } = useCatTheme();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -28,9 +32,11 @@ export default function edit() {
 
     return (
         <>
-            <div className="relative w-screen h-screen bg-[#FEFFF5]">
-                <div className="h-full overflow-hidden" onClick={() => { router.push("/profile/photo") }}>
-                    <div className="flex mt-6 px-6">
+            <div className={`relative w-screen h-screen ${theme.pageBg}`}>
+                <div className="h-full overflow-hidden">
+                    <div className="flex mt-6 px-6"
+                        onClick={() => { router.push("/profile/photo") }}
+                    >
                         <svg
                             className="ml-auto"
                             xmlns="http://www.w3.org/2000/svg"
@@ -47,15 +53,15 @@ export default function edit() {
                     </div>
 
                     <Image
-                        src="/img/cat_footprints.png"
-                        alt="猫の足跡"
+                        src={theme.footPrints}
+                        alt="選択中の猫の色の足跡"
                         width={45}
                         height={45}
                         className="absolute top-8 right-12"
                     />
                     <Image
-                        src="/img/cat_footprints.png"
-                        alt="猫の足跡"
+                        src={theme.footPrints}
+                        alt="選択中の猫の色の足跡"
                         width={45}
                         height={45}
                         className="absolute top-16 right-20"
@@ -70,18 +76,24 @@ export default function edit() {
                     </div>
 
 
-                    <div className="border-y-[8px] border-x-[16px] border-[#FFCC01] mt-15">
-                        <h2 className="inline-block text-base mt-4 ml-4 border-b-2 border-b-[#FFCC01]">ねこちゃんを選ぶ</h2>
-                        <div className="flex items-center justify-center gap-23 w-full h-13 bg-[#FFF7CA] mt-4">
-                            <p className="text-xs">黄色中心に、黒猫の<br />イメージになるよ</p>
+                    <div className={`border-y-[8px] border-x-[16px] mt-15 ${theme.catBorderWrap}`}>
+                        <h2 className={`inline-block text-base mt-4 ml-4 border-b-2 ${theme.catSelectBorder}`}>ねこちゃんを選ぶ</h2>
+                        <div className={`flex items-center justify-center gap-23 w-full h-13 mt-4 ${theme.labelBorder}`}>
+                            <p className="text-xs pl-4">{theme.description}</p>
                             {/* 猫の全身イラスト */}
-                            <Image src="/img/yellow_eyes_cat_all.png" alt="黒猫の全身" width={112} height={128} />
+                            <Image src={theme.bigCatSrc} alt="選択中の猫の全身" width={112} height={128} />
                         </div>
                         {/* 猫の顔イラスト */}
                         <div className="flex my-2 ml-4 gap-2">
-                            <Image src="/img/black_cat.png" alt="黒猫の顔" width={54} height={35} className="border-gray-400" />
-                            <Image src="/img/white_cat.png" alt="黒猫の顔" width={54} height={35} />
-                            <Image src="/img/brown_cat.png" alt="黒猫の顔" width={54} height={35} />
+                            <button type="button" onClick={() => { setSelectedCat("black") }}>
+                                <Image src="/img/black_cat.png" alt="黒猫の顔" width={54} height={35} className="border-gray-400" />
+                            </button>
+                            <button type="button" onClick={() => { setSelectedCat("white") }}>
+                                <Image src="/img/white_cat.png" alt="黒猫の顔" width={54} height={35} />
+                            </button>
+                            <button type="button" onClick={() => { setSelectedCat("blue") }}>
+                                <Image src="/img/brown_cat.png" alt="黒猫の顔" width={54} height={35} />
+                            </button>
                         </div>
 
                     </div>
@@ -89,7 +101,7 @@ export default function edit() {
 
                     <button
                         type="button"
-                        className="w-50 h-12 rounded-full bg-[#FFCC01] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] mx-auto mt-12.5 mb-2 block"
+                        className={`w-50 h-12 rounded-full drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] mx-auto mt-12.5 mb-2 block ${theme.buttonBg}`}
                     >
                         保存する
                     </button>
