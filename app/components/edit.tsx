@@ -69,7 +69,7 @@ export default function edit() {
 
                     <div className="flex flex-col items-center justify-center mt-15">
                         <h1>プロフィール編集</h1>
-                        <div className="mt-6 w-29 h-30 rounded-full bg-white flex justify-center items-center shadow-[0_4px_4px_0_rgba(0,0,0,0.25)]">
+                        <div className={`mt-6 w-29 h-30 rounded-full flex justify-center items-center shadow-[0_4px_4px_0_rgba(0,0,0,0.25)] ${theme.labelBorder}`}>
                             <Image src="/img/shisa.png" alt="シーサーの写真" width={110} height={110} className="flex justify-center items-center" />
                         </div>
                         <p className="mt-4">タップして画像を変更</p>
@@ -102,6 +102,9 @@ export default function edit() {
                     <button
                         type="button"
                         className={`w-50 h-12 rounded-full drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] mx-auto mt-12.5 mb-2 block ${theme.buttonBg}`}
+                        onClick={() => {
+                            router.push("/profile/photo");
+                        }}
                     >
                         保存する
                     </button>
