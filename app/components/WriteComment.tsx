@@ -1,14 +1,69 @@
+// WriteComment.tsx
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
+import { db, storage } from '../firebase/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 type Props = {
 	src: string;
 	onRetake: () => void;
 	onClose?: () => void;
+	onComplete?: () => void;
+	locationName?: string;
 };
 
-export default function PhotoDecoration({ src, onRetake, onClose }: Props) {
+type PostDoc = {
+	imageUrl: string;
+	createdAt: ReturnType<typeof serverTimestamp>;
+	comment?: string;
+	locationName?: string;
+};
+
+export default function WriteComment({ src, onClose, onComplete, locationName }: Props) {
+	const [comment, setComment] = useState('');
+	const [loading, setLoading] = useState(false);
+
+	const handleSubmit = async () => {
+		try {
+			setLoading(true);
+
+			const fileName = `${crypto.randomUUID()}.jpg`;
+			const storageRef = ref(storage, `posts/${fileName}`);
+
+			// 画像を Storage にアップロード
+			await uploadString(storageRef, src, 'data_url');
+			const imageUrl = await getDownloadURL(storageRef);
+
+			// Firestore に保存するデータ
+			const docData: PostDoc = {
+				imageUrl,
+				createdAt: serverTimestamp(),
+			};
+
+			if (comment.trim() !== '') {
+				docData.comment = comment;
+			}
+
+			if (locationName) {
+				docData.locationName = locationName;
+			}
+
+			await addDoc(collection(db, 'posts'), docData);
+
+			alert('投稿しました');
+
+			onComplete?.();
+		} catch (e) {
+			console.error(e);
+			alert('投稿に失敗しました');
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div className="w-full h-full">
 			<div className="absolute right-6 top-6">
@@ -39,13 +94,19 @@ export default function PhotoDecoration({ src, onRetake, onClose }: Props) {
 				</div>
 			</div>
 
-            <textarea
-                className="w-64 h-24 border mt-10 rounded-xl border-gray-300 pl-2 pt-2"
-                placeholder='思い出を書こう'
-            />
+			<textarea
+				className="w-64 h-24 border mt-10 rounded-xl border-gray-300 pl-2 pt-2"
+				placeholder="思い出を書こう"
+				value={comment}
+				onChange={(e) => setComment(e.target.value)}
+			/>
 
-			<button className="block mx-auto mt-6 flex justify-center items-center w-50 h-12 rounded-full bg-accent-color text-base font-medium text-main-color drop-shadow-button">
-				投稿する
+			<button
+				className="block mx-auto mt-6 flex justify-center items-center w-50 h-12 rounded-full bg-accent-color text-base font-medium text-main-color drop-shadow-button"
+				onClick={handleSubmit}
+				disabled={loading}
+			>
+				{loading ? '投稿中...' : '投稿する'}
 			</button>
 		</div>
 	);
