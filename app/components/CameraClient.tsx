@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import Webcam from 'react-webcam';
 
 type CameraClientProps = {
@@ -11,6 +11,19 @@ type CameraClientProps = {
 
 export default function CameraClient({ open, onClose, onCapture }: CameraClientProps) {
 	const webcamRef = useRef<Webcam>(null);
+
+	// ① 内カメ/外カメの状態
+	const [isFront, setIsFront] = useState(false);
+
+	// ② カメラの設定（状態に応じて切り替え）
+	const videoConstraints = {
+		facingMode: isFront ? "user" : "environment",
+	};
+
+	// ③ 切り替えボタンの処理
+	const toggleCamera = () => {
+		setIsFront(prev => !prev);
+	};
 
 	const handleTakePhoto = useCallback(() => {
 		if (!webcamRef.current) return;
@@ -27,10 +40,12 @@ export default function CameraClient({ open, onClose, onCapture }: CameraClientP
 		return null;
 	}
 
+
+
 	return (
 		<div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-			<section className="w-full h-full mx-auto bg-[#FEFFF5] rounded-lg ">
-				<div className="flex justify-end mt-6.5 mr-6.5">
+			<section className="w-full h-full mx-auto bg-[#FEFFF5] rounded-lg flex flex-col">
+				<div className="flex flex-1 flex-col justify-start items-end mr-6 mt-6">
 					<button
 						onClick={onClose}
 						className="w-9 h-9 flex flex-col justify-center items-center rounded-full text-lg border-4 border-[#FFEA95]"
@@ -40,7 +55,7 @@ export default function CameraClient({ open, onClose, onCapture }: CameraClientP
 						</svg>
 					</button>
 				</div>
-				<div className="w-73 h-98.5 mx-auto border-5 border-[#FFCC01] rounded-3xl overflow-hidden bg-black shadow-[inset_0_0_20px_0_rgba(34,34,34,0.20)]">
+				<div className="w-73 h-98.5 mx-auto mb-10 border-5 border-[#FFCC01] rounded-3xl overflow-hidden bg-black shadow-[inset_0_0_20px_0_rgba(34,34,34,0.20)]">
 					<Webcam
 						ref={webcamRef}
 						audio={false}
@@ -74,8 +89,19 @@ export default function CameraClient({ open, onClose, onCapture }: CameraClientP
 						</button>
 					</div>
 				</div>
+				{/* 内カメと外カメの切り替えボタン */}
+				<button onClick={toggleCamera}
+					className="w-10 h-12 flex justify-center items-center border-2 border-[#FFCC01] rounded-xl ml-auto mr-12 mb-7"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="19" height="20" viewBox="0 0 19 20" fill="none">
+						<path d="M15.034 14.9569C13.863 16.1241 12.3727 16.9185 10.751 17.24C9.12919 17.5614 7.44856 17.3956 5.92091 16.7633C4.39327 16.131 3.087 15.0606 2.16678 13.6871C1.24656 12.3135 0.753589 10.6982 0.75 9.04492" stroke="black" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" />
+						<path d="M14.3601 19.2503L15.1921 15.8783C15.2304 15.7314 15.2385 15.5782 15.2159 15.428C15.1933 15.2778 15.1406 15.1338 15.0607 15.0046C14.9809 14.8754 14.8757 14.7638 14.7515 14.6764C14.6273 14.589 14.4866 14.5278 14.3381 14.4963L10.9661 13.6533" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+						<path d="M2.98608 5.04343C4.157 3.87591 5.64739 3.08122 7.26933 2.75956C8.89126 2.43791 10.5721 2.60369 12.1 3.236C13.6278 3.86832 14.9343 4.93886 15.8545 6.31264C16.7748 7.68641 17.2677 9.30191 17.2711 10.9554" stroke="black" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" />
+						<path d="M3.66005 0.75L2.82805 4.122C2.78989 4.26901 2.78192 4.42223 2.80462 4.57241C2.82732 4.72258 2.88022 4.8666 2.96013 4.99576C3.04004 5.12493 3.1453 5.23655 3.26955 5.32391C3.3938 5.41126 3.53446 5.47252 3.68305 5.504L7.05405 6.347" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
+				</button>
 				{/* 下の黄色背景 */}
-				<div className="w-full h-[127px] bg-[#FFE866]"></div>
+				<div className="w-full h-[127px] bg-[#FFE866] shrink-0"></div>
 			</section>
 		</div>
 	);
