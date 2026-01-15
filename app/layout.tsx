@@ -1,5 +1,6 @@
 import { Kiwi_Maru } from "next/font/google";
 import "./globals.css";
+import { CatThemeProvider } from "./providers/catThemeProvider";
 
 const kiwimaru = Kiwi_Maru({
   subsets: ["latin"],
@@ -17,7 +18,9 @@ export default function RootLayout({
       <body
         className={`${kiwimaru.className} `}
       >
-        {children}
+        <CatThemeProvider>
+          {children}
+        </CatThemeProvider>
       </body>
     </html>
   );

@@ -40,12 +40,19 @@ const DESTINATIONS: Destination[] = [
 		nameJa: '塚本',
 		nameEn: 'Tsukamoto',
 	},
+	// {
+	// 	id: 'skybilding',
+	// 	lng: 135.4895,
+	// 	lat: 34.7053,
+	// 	nameJa: '梅田スカイビル',
+	// 	nameEn: 'Umeda Sky Building',
+	// },
 	{
-		id: 'skybilding',
-		lng: 135.4895,
-		lat: 34.7053,
-		nameJa: '梅田スカイビル',
-		nameEn: 'Umeda Sky Building',
+		id: 'yamamoto',
+		lng: 135.395043,
+		lat: 34.819787,
+		nameJa: '山本（宝塚）',
+		nameEn: 'Yamamoto',
 	},
 ];
 
