@@ -8,9 +8,11 @@ type Props = {
 	src: string;
 	onRetake: () => void;
 	onClose?: () => void;
+	onComplete?: () => void;
+	locationName?: string;
 };
 
-export default function PhotoDecoration({ src, onRetake, onClose }: Props) {
+export default function PhotoDecoration({ src, onRetake, onClose, onComplete, locationName }: Props) {
 	const [isWritingComment, setIsWritingComment] = useState(false);
 
 	if (isWritingComment) {
@@ -18,7 +20,9 @@ export default function PhotoDecoration({ src, onRetake, onClose }: Props) {
 			<WriteComment
 				src={src}
 				onRetake={onRetake}
-				onClose={() => setIsWritingComment(false)} // WriteComment 右上ボタンで戻る
+				onClose={() => setIsWritingComment(false)}
+				onComplete={onComplete}
+				locationName={locationName}
 			/>
 		);
 	}

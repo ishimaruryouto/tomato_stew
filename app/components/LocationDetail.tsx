@@ -5,31 +5,41 @@ import Image from 'next/image';
 
 type LocationDetailProps = {
 	onClose: () => void;
+	locationId?: string | null;
 	nameJa?: string | null;
 	nameEn?: string | null;
 	onStartCapture?: () => void;
 };
 
+const DEST_IMAGE_MAP: Record<string, string> = {
+	nakazakicho: '/img/nakazakicho.webp',
+	tukamoto: '/img/tukamoto.webp',
+	umeda: '/img/umeda_hankyu.webp',
+	fureaipark: '/img/fureai_park.webp',
+};
+
 export default function LocationDetail({
 	onClose,
+	locationId,
 	nameJa,
 	nameEn,
 	onStartCapture,
 }: LocationDetailProps) {
+	const mainImageSrc =
+		locationId && DEST_IMAGE_MAP[locationId] ? DEST_IMAGE_MAP[locationId] : '/img/nakazakicho.webp';
+
 	return (
 		<div className="flex min-h-screen w-full flex-col items-center bg-main-color px-6 pt-6">
-			{/* カード */}
 			<div className="relative w-full overflow-hidden rounded-[20px] mt-4 drop-shadow-map">
 				{/* メイン画像 */}
 				<div className="relative h-88.5 w-full">
 					<Image
-						src="/img/nakazakicho.webp"
-						alt="Nakazakicho"
+						src={mainImageSrc}
+						alt={nameJa ?? 'Location'}
 						width={400}
 						height={288}
 						className="h-full w-full object-cover"
 					/>
-					{/* 閉じるボタン */}
 					<button
 						type="button"
 						onClick={onClose}
