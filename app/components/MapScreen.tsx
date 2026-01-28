@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css'; // ← 追加：マーカー表示に必須
@@ -60,8 +60,14 @@ const DESTINATIONS: Destination[] = [
 	},
 ];
 
-export default function MapScreen() {
+const DEST_IMAGE_MAP: Record<Destination['id'], string> = {
+	nakazakicho: '/img/nakazakicho.webp',
+	tukamoto: '/img/tukamoto.webp',
+	umeda: '/img/umeda_hankyu.webp',
+	fureaipark: '/img/fureai_park.webp',
+};
 
+export default function MapScreen() {
 	const router = useRouter();
 
 	const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +82,7 @@ export default function MapScreen() {
 
 	const [showCamera, setShowCamera] = useState(false);
 	const [capturedImg, setCapturedImg] = useState<string | null>(null);
+	const [capturedLocationName, setCapturedLocationName] = useState<string | null>(null);
 	const [showLocationDetail, setShowLocationDetail] = useState(false);
 	const [cameraOpenedFromLocationDetail, setCameraOpenedFromLocationDetail] = useState(false);
 
@@ -280,8 +287,8 @@ export default function MapScreen() {
 
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
+		setCapturedLocationName(currentDestination?.nameEn || null);
 		setShowCamera(false);
-		// キャプチャ完了では LocationDetail に自動で戻さない
 		setCameraOpenedFromLocationDetail(false);
 	};
 
@@ -317,7 +324,12 @@ export default function MapScreen() {
 				</div>
 
 				{isInRange && (
-					<div className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map" onClick={() => { router.push("/otherpost") }}>
+					<div
+						className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map"
+						onClick={() => {
+							router.push('/otherpost');
+						}}
+					>
 						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>{currentDestination?.nameJa}に到着しました。</p>
@@ -346,8 +358,12 @@ export default function MapScreen() {
 							<div className="absolute left-4 -top-10">
 								<div className="h-20 w-20 overflow-hidden rounded-xl">
 									<Image
-										src="/img/nakazakicho.webp"
-										alt="nakazakicho"
+										src={
+											currentDestination
+												? DEST_IMAGE_MAP[currentDestination.id]
+												: '/img/nakazakicho.webp'
+										}
+										alt={currentDestination?.id ?? 'destination'}
 										width={1000}
 										height={1000}
 										className="h-full w-full object-cover"
@@ -375,7 +391,17 @@ export default function MapScreen() {
 							<PhotoDecoration
 								src={capturedImg}
 								onRetake={handleRetake}
-								onClose={() => setCapturedImg(null)}
+								onClose={() => {
+									setCapturedImg(null);
+									setCapturedLocationName(null);
+								}}
+								onComplete={() => {
+									setCapturedImg(null);
+									setCapturedLocationName(null);
+									setShowCamera(false);
+									setShowLocationDetail(false);
+								}}
+								locationName={capturedLocationName ?? undefined}
 							/>
 						</div>
 					</div>
@@ -387,6 +413,7 @@ export default function MapScreen() {
 					<div className="pointer-events-auto absolute inset-0 flex items-center justify-center">
 						<LocationDetail
 							onClose={handleCloseLocationDetail}
+							locationId={currentDestination?.id ?? null}
 							nameJa={currentDestination?.nameJa ?? null}
 							nameEn={currentDestination?.nameEn ?? null}
 							onStartCapture={handleStartCapture}
