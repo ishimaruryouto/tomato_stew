@@ -40,19 +40,19 @@ const DESTINATIONS: Destination[] = [
 		nameJa: '塚本',
 		nameEn: 'Tsukamoto',
 	},
+	// {
+	// 	id: 'skybilding',
+	// 	lng: 135.4895,
+	// 	lat: 34.7053,
+	// 	nameJa: '梅田スカイビル',
+	// 	nameEn: 'Umeda Sky Building',
+	// },
 	{
-		id: 'umeda',
-		lng: 135.4895,
-		lat: 34.7053,
-		nameJa: '梅田',
-		nameEn: 'Umeda',
-	},
-	{
-		id: 'fureaipark',
-		lng: 127.6619,
-		lat: 26.1576,
-		nameJa: 'ふれあい広場',
-		nameEn: 'Fureai Park',
+		id: 'yamamoto',
+		lng: 135.395043,
+		lat: 34.819787,
+		nameJa: '山本（宝塚）',
+		nameEn: 'Yamamoto',
 	},
 ];
 
