@@ -23,6 +23,7 @@ type Destination = {
 	lat: number;
 	nameJa: string;
 	nameEn: string;
+	bgColor: string;
 };
 
 const DESTINATIONS: Destination[] = [
@@ -32,6 +33,7 @@ const DESTINATIONS: Destination[] = [
 		lat: 34.707,
 		nameJa: '中崎町',
 		nameEn: 'Nakazakicho',
+		bgColor: '#FFCC01',
 	},
 	{
 		id: 'tukamoto',
@@ -39,6 +41,7 @@ const DESTINATIONS: Destination[] = [
 		lat: 34.7127,
 		nameJa: '塚本',
 		nameEn: 'Tsukamoto',
+		bgColor: '#E6A2C5',
 	},
 	// {
 	// 	id: 'skybilding',
@@ -53,6 +56,7 @@ const DESTINATIONS: Destination[] = [
 		lat: 34.819787,
 		nameJa: '山本（宝塚）',
 		nameEn: 'Yamamoto',
+		bgColor: '#90D4F9',
 	},
 ];
 
@@ -123,8 +127,8 @@ export default function MapScreen() {
 					type: 'fill',
 					source: sourceId,
 					paint: {
-						'fill-color': '#4264fb',
-						'fill-opacity': 0.25,
+						'fill-color': dest.bgColor,
+						'fill-opacity': 0.5,
 					},
 				});
 
@@ -133,7 +137,7 @@ export default function MapScreen() {
 					type: 'line',
 					source: sourceId,
 					paint: {
-						'line-color': '#4264fb',
+						'line-color': dest.bgColor,
 						'line-width': 2,
 					},
 				});

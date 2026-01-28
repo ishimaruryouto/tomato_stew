@@ -24,8 +24,7 @@ export default function Login() {
             );
 
             console.log("ログイン成功:", userCredential.user);
-            alert("ログイン成功したで！");
-
+            router.push("/");
         } catch (err: any) {
 
             if (err.code === "auth/invalid-credential") {
@@ -110,8 +109,7 @@ export default function Login() {
                         {/* 登録ボタン */}
                         <button
                             type="submit"
-                            className="w-full h-14 bg-[#FFCC01] rounded-full text-sm font-medium mt-8 drop-shadow-[0_4px_4px_rgba(34,34,34,0.30)]"
-                        >
+                            className="w-full h-14 bg-[#FFCC01] rounded-full text-sm font-medium mt-8 drop-shadow-[0_4px_4px_rgba(34,34,34,0.30)]">
                             ログイン
                         </button>
                     </form>
