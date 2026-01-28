@@ -5,7 +5,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
+import {
+    collection,
+    onSnapshot,
+    orderBy,
+    query,
+    where,
+} from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
+
 import { useEffect, useState } from "react";
 import { useCatTheme } from "../providers/catThemeProvider";
 
@@ -36,28 +45,42 @@ export default function Frend() {
         return () => unsubscribe();
     }, []);
 
-    const photos: PhotoData[] = [
-        {
-            src: "/img/photo_img.png",
-            station: "梅田駅",
-            comment: "地図見ても今どこにおるんか謎すぎて気づいたら全然ちゃうとこ出てるんよね😂"
-        },
-        {
-            src: "/img/photo_img.png",
-            station: "本町駅",
-            comment: "カフェ探してたら逆方向に歩いてた事件☕️笑"
-        },
-        {
-            src: "/img/photo_img.png",
-            station: "難波駅",
-            comment: "人多すぎて方向感覚ゼロになった😂"
-        },
-        {
-            src: "/img/photo_img.png",
-            station: "心斎橋駅",
-            comment: "買い物楽しすぎて帰れんくなったやつ🛍️"
-        }
-    ];
+    type PhotoData = {
+        id: string,
+        imageUrl: string,
+        locationName?: string;
+        comment?: string;
+        createdAt?: Timestamp | null;
+    }
+
+    const [photos, setPhotos] = useState<PhotoData[]>([]);
+
+    useEffect(() => {
+        const uid = loginUser?.id;
+        if (!uid) return;
+
+        const q = query(
+            collection(db, "posts"),
+            where("uid", "==", uid),
+            // orderBy("createdAt", "desc")
+        );
+
+        const unsub = onSnapshot(q, (snap) => {
+            const list: PhotoData[] = snap.docs.map((doc) => {
+                const data = doc.data() as any;
+                return {
+                    id: doc.id,
+                    imageUrl: data.imageUrl,
+                    locationName: data.locationName ?? "",
+                    comment: data.comment ?? "",
+                    createdAt: data.createdAt ?? null,
+                };
+            });
+            setPhotos(list);
+        });
+
+        return () => unsub();
+    }, [loginUser?.id]);
 
     const { theme } = useCatTheme();
 
@@ -74,24 +97,27 @@ export default function Frend() {
                     >
                         <div className="bg-white w-60.5 h-96.25 mx-auto rounded-bl-[6px] rounded-br-[6px] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)]">
                             <Image
-                                src={modalData.src}
+                                src={modalData.imageUrl}
                                 alt="photo"
                                 width={300}
                                 height={400}
-                                className="w-51.75  h-69.25 mx-auto pt-6.5"
+                                className="w-51.75 h-69.25 mx-auto pt-6.5 object-cover"
+                                unoptimized
                             />
                         </div>
 
                         <h2 className="mt-6 font-bold text-lg border-b-2 border-yellow-400 w-fit mx-auto">
-                            {modalData.station}
+                            {modalData.locationName || "場所未設定"}
                         </h2>
 
                         <p className="text-gray-500 mt-2 text-center">
-                            ○月○日 ○時○分
+                            {modalData.createdAt
+                                ? new Date(modalData.createdAt.seconds * 1000).toLocaleString("ja-JP")
+                                : ""}
                         </p>
 
                         <div className="mt-4 px-15.5">
-                            <p className="font-bold">コメント</p>
+                            <p className="font-bold">{modalData.comment}</p>
                             <p className="mt-2 leading-relaxed">{modalData.comment}</p>
                         </div>
 
@@ -157,7 +183,7 @@ export default function Frend() {
                             <div>
                                 <p className="text-base">フォト</p>
                                 {/* 自身のチェキ数を反映させる（今は仮置きの16枚） */}
-                                <p className="">16枚</p>
+                                <p className="">{photos.length}</p>
                             </div>
                         </div>
                     </div>
@@ -174,7 +200,14 @@ export default function Frend() {
                                     onClick={() => setModalData(p)}
                                 >
                                     <div className="px-2 pt-3">
-                                        <Image src={p.src} alt="photo" width={96} height={128} />
+                                        <Image
+                                            src={p.imageUrl}
+                                            alt="photo"
+                                            width={96}
+                                            height={128}
+                                            className="w-full h-auto"
+                                            unoptimized
+                                        />
                                     </div>
                                 </div>
                             ))}

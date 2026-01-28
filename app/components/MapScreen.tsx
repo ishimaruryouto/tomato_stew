@@ -64,6 +64,7 @@ const DEST_IMAGE_MAP: Record<Destination['id'], string> = {
 	nakazakicho: '/img/nakazakicho.webp',
 	tukamoto: '/img/tukamoto.webp',
 	umeda: '/img/umeda_hankyu.webp',
+	yamamoto: '/img/nakazakicho.webp',
 	fureaipark: '/img/fureai_park.webp',
 };
 
@@ -287,7 +288,7 @@ export default function MapScreen() {
 
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
-		setCapturedLocationName(currentDestination?.nameEn || null);
+		setCapturedLocationName(currentDestination?.id || null);
 		setShowCamera(false);
 		setCameraOpenedFromLocationDetail(false);
 	};
