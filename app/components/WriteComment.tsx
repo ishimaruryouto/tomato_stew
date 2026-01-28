@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { db, storage } from '../firebase/firebase';
+import { auth, db, storage } from '../firebase/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
@@ -20,6 +20,7 @@ type PostDoc = {
 	createdAt: ReturnType<typeof serverTimestamp>;
 	comment?: string;
 	locationName?: string;
+	uid?: string; // ついでに保存したいなら
 };
 
 export default function WriteComment({ src, onClose, onComplete, locationName }: Props) {
@@ -27,11 +28,19 @@ export default function WriteComment({ src, onClose, onComplete, locationName }:
 	const [loading, setLoading] = useState(false);
 
 	const handleSubmit = async () => {
+		console.log('currentUser:', auth.currentUser);
+
+		const uid = auth.currentUser?.uid;
+		if (!uid) {
+			alert('ログイン状態が確認できません');
+			return;
+		}
+
 		try {
 			setLoading(true);
 
 			const fileName = `${crypto.randomUUID()}.jpg`;
-			const storageRef = ref(storage, `posts/${fileName}`);
+			const storageRef = ref(storage, `posts/${uid}/${fileName}`);
 
 			// 画像を Storage にアップロード
 			await uploadString(storageRef, src, 'data_url');
@@ -41,6 +50,7 @@ export default function WriteComment({ src, onClose, onComplete, locationName }:
 			const docData: PostDoc = {
 				imageUrl,
 				createdAt: serverTimestamp(),
+				uid, // 不要なら消してOK
 			};
 
 			if (comment.trim() !== '') {
@@ -54,7 +64,6 @@ export default function WriteComment({ src, onClose, onComplete, locationName }:
 			await addDoc(collection(db, 'posts'), docData);
 
 			alert('投稿しました');
-
 			onComplete?.();
 		} catch (e) {
 			console.error(e);
