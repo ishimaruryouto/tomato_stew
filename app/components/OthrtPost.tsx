@@ -175,7 +175,7 @@ import {
 type PostDoc = {
     imageUrl: string;
     comment?: string;
-    locationName?: string; // "Yamamoto"
+    locationName?: string;
     createdAt?: Timestamp;
     uid?: string;
 };
