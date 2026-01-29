@@ -14,7 +14,7 @@ import NavigationBar from './NavigationBar';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
-const DEST_RADIUS_IN_KM = 0.3;
+const DEST_RADIUS_IN_KM = 0.2;
 const DEFAULT_ZOOM = 16;
 
 type Destination = {
