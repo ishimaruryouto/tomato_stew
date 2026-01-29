@@ -1,14 +1,16 @@
-// WriteComment.tsx
+// app/components/WriteComment.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { auth, db, storage } from '../firebase/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import type { Stamp } from './PhotoDecoration';
 
 type Props = {
 	src: string;
+	stamps: Stamp[];
 	onRetake: () => void;
 	onClose?: () => void;
 	onComplete?: () => void;
@@ -20,16 +22,105 @@ type PostDoc = {
 	createdAt: ReturnType<typeof serverTimestamp>;
 	comment?: string;
 	locationName?: string;
-	uid?: string; // ついでに保存したいなら
+	uid?: string;
 };
 
-export default function WriteComment({ src, onClose, onComplete, locationName }: Props) {
+const OUT_W = 1080;
+const OUT_H = Math.round(OUT_W * (74 / 56));
+
+function clamp01(v: number) {
+	return Math.min(1, Math.max(0, v));
+}
+
+async function loadHtmlImage(src: string): Promise<HTMLImageElement> {
+	const img = new window.Image();
+	img.src = src;
+	await img.decode();
+	return img;
+}
+
+// object-cover を canvas で再現
+function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, dw: number, dh: number) {
+	const iw = img.naturalWidth;
+	const ih = img.naturalHeight;
+
+	const scale = Math.max(dw / iw, dh / ih);
+	const sw = dw / scale;
+	const sh = dh / scale;
+	const sx = (iw - sw) / 2;
+	const sy = (ih - sh) / 2;
+
+	ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+}
+
+async function composeBlob(baseDataUrl: string, stamps: Stamp[]): Promise<Blob> {
+	const canvas = document.createElement('canvas');
+	canvas.width = OUT_W;
+	canvas.height = OUT_H;
+
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('canvas ctx is null');
+
+	const baseImg = await loadHtmlImage(baseDataUrl);
+	drawCover(ctx, baseImg, OUT_W, OUT_H);
+
+	for (const s of stamps) {
+		const stampImg = await loadHtmlImage(s.src);
+
+		const x = clamp01(s.x) * OUT_W;
+		const y = clamp01(s.y) * OUT_H;
+
+		// スタンプ基準サイズ（必要なら調整）
+		const baseSize = OUT_W * 0.18;
+		const w = baseSize * s.scale;
+		const h = baseSize * s.scale;
+
+		ctx.save();
+		ctx.translate(x, y);
+		ctx.rotate(s.rotation);
+		ctx.drawImage(stampImg, -w / 2, -h / 2, w, h);
+		ctx.restore();
+	}
+
+	const blob = await new Promise<Blob>((resolve, reject) => {
+		canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.92);
+	});
+
+	return blob;
+}
+
+export default function WriteComment({ src, stamps, onClose, onComplete, locationName }: Props) {
 	const [comment, setComment] = useState('');
 	const [loading, setLoading] = useState(false);
 
-	const handleSubmit = async () => {
-		console.log('currentUser:', auth.currentUser);
+	// ★ プレビュー用（スタンプ合成後の画像URL）
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+	// ★ WriteComment表示時点で合成してプレビューに反映
+	useEffect(() => {
+		let cancelled = false;
+		let objectUrl: string | null = null;
+
+		(async () => {
+			try {
+				const blob = await composeBlob(src, stamps);
+				if (cancelled) return;
+
+				objectUrl = URL.createObjectURL(blob);
+				setPreviewUrl(objectUrl);
+			} catch (e) {
+				console.error('preview compose failed:', e);
+				setPreviewUrl(null);
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+			if (objectUrl) URL.revokeObjectURL(objectUrl);
+		};
+	}, [src, stamps]);
+
+	const handleSubmit = async () => {
 		const uid = auth.currentUser?.uid;
 		if (!uid) {
 			alert('ログイン状態が確認できません');
@@ -39,27 +130,23 @@ export default function WriteComment({ src, onClose, onComplete, locationName }:
 		try {
 			setLoading(true);
 
+			// ★ 合成してアップロード
+			const blob = await composeBlob(src, stamps);
+
 			const fileName = `${crypto.randomUUID()}.jpg`;
 			const storageRef = ref(storage, `posts/${uid}/${fileName}`);
 
-			// 画像を Storage にアップロード
-			await uploadString(storageRef, src, 'data_url');
+			await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
 			const imageUrl = await getDownloadURL(storageRef);
 
-			// Firestore に保存するデータ
 			const docData: PostDoc = {
 				imageUrl,
 				createdAt: serverTimestamp(),
-				uid, // 不要なら消してOK
+				uid,
 			};
 
-			if (comment.trim() !== '') {
-				docData.comment = comment;
-			}
-
-			if (locationName) {
-				docData.locationName = locationName;
-			}
+			if (comment.trim() !== '') docData.comment = comment;
+			if (locationName) docData.locationName = locationName;
 
 			await addDoc(collection(db, 'posts'), docData);
 
@@ -97,7 +184,14 @@ export default function WriteComment({ src, onClose, onComplete, locationName }:
 			<div className="w-64.5 h-102.5 bg-main-color drop-shadow-card rounded-b-md mt-31">
 				<div className="w-56 h-74 overflow-hidden bg-white relative top-6.5 left-4.5">
 					<div className="absolute inset-0">
-						<Image src={src} alt="decorated" fill className="object-cover" unoptimized />
+						{/* ★ ここがスタンプ合成後プレビュー */}
+						<Image
+							src={previewUrl ?? src}
+							alt="decorated"
+							fill
+							className="object-cover"
+							unoptimized
+						/>
 					</div>
 					<div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_8px_0_rgba(34,34,34,0.30)]" />
 				</div>
