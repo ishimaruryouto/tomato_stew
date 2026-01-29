@@ -387,7 +387,7 @@ export default function MapScreen() {
 				)}
 
 				{capturedImg && (
-					<div className="w-full h-full pointer-events-auto absolute top-0 left-0 inset-x-4 bg-main-color pt-6 px-6 flex flex-col items-center">
+					<div className="w-full h-full pointer-events-auto absolute top-0 left-0 bg-main-color pt-6 px-6 flex flex-col items-center">
 						<div className="flex justify-center">
 							<PhotoDecoration
 								src={capturedImg}
