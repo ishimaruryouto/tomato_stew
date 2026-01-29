@@ -19,6 +19,7 @@ type Props = {
 	onClose?: () => void;
 	onComplete?: () => void;
 	locationName?: string;
+	locationId: string;
 };
 
 const STAMP_SOURCES = Array.from({ length: 12 }, (_, i) => `/img/stamp${i + 1}.png`);
@@ -37,6 +38,7 @@ export default function PhotoDecoration({
 	onClose,
 	onComplete,
 	locationName,
+	locationId,
 }: Props) {
 	const [isWritingComment, setIsWritingComment] = useState(false);
 
@@ -140,6 +142,7 @@ export default function PhotoDecoration({
 				onClose={() => setIsWritingComment(false)}
 				onComplete={onComplete}
 				locationName={locationName}
+				locationId={locationId}
 			/>
 		);
 	}

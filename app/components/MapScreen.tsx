@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css'; // ← 追加：マーカー表示に必須
+import 'mapbox-gl/dist/mapbox-gl.css';
 import * as turf from '@turf/turf';
 import CameraClient from './CameraClient';
 import LocationDetail from './LocationDetail';
@@ -43,13 +43,6 @@ const DESTINATIONS: Destination[] = [
 		nameEn: 'Tsukamoto',
 		bgColor: '#E6A2C5',
 	},
-	// {
-	// 	id: 'skybilding',
-	// 	lng: 135.4895,
-	// 	lat: 34.7053,
-	// 	nameJa: '梅田スカイビル',
-	// 	nameEn: 'Umeda Sky Building',
-	// },
 	{
 		id: 'yamamoto',
 		lng: 135.395043,
@@ -83,13 +76,15 @@ export default function MapScreen() {
 
 	const [showCamera, setShowCamera] = useState(false);
 	const [capturedImg, setCapturedImg] = useState<string | null>(null);
+
+	const [capturedLocationId, setCapturedLocationId] = useState<string | null>(null);
 	const [capturedLocationName, setCapturedLocationName] = useState<string | null>(null);
+
 	const [showLocationDetail, setShowLocationDetail] = useState(false);
 	const [cameraOpenedFromLocationDetail, setCameraOpenedFromLocationDetail] = useState(false);
 
 	const [currentDestination, setCurrentDestination] = useState<Destination | null>(null);
 
-	// Map初期化
 	useEffect(() => {
 		if (mapRef.current || !mapContainerRef.current) return;
 
@@ -114,9 +109,9 @@ export default function MapScreen() {
 
 			destinationCircles.forEach(({ dest, circle }) => {
 				const center: [number, number] = [dest.lng, dest.lat];
-				// ✅ 目的地マーカー（黄色ピン）
+
 				destinationMarkerRef.current = new mapboxgl.Marker({
-					color: '#FFD600', // 黄色
+					color: '#FFD600',
 				})
 					.setLngLat(center)
 					.addTo(map);
@@ -124,7 +119,7 @@ export default function MapScreen() {
 				const sourceId = `range-circle-${dest.id}`;
 				const fillLayerId = `range-circle-fill-${dest.id}`;
 				const borderLayerId = `range-circle-border-${dest.id}`;
-				// 円
+
 				map.addSource(sourceId, {
 					type: 'geojson',
 					data: circle,
@@ -167,13 +162,11 @@ export default function MapScreen() {
 					setCurrentDestination(null);
 				}
 
-				// ✅ ユーザー現在地マーカー（赤ピン）
 				if (userMarkerRef.current) {
-					// 位置だけ更新
 					userMarkerRef.current.setLngLat(location);
 				} else {
 					userMarkerRef.current = new mapboxgl.Marker({
-						color: '#FF0000', // 赤
+						color: '#FF0000',
 					})
 						.setLngLat(location)
 						.addTo(map);
@@ -258,11 +251,9 @@ export default function MapScreen() {
 		};
 	}, []);
 
-	// ボタン系
 	const handlePhotoButton = () => {
 		if (!isInRange) return;
 		setCapturedImg(null);
-		// カメラを直接開くのではなく、まずロケーション詳細を表示する
 		setShowLocationDetail(true);
 		setShowCamera(false);
 	};
@@ -272,7 +263,8 @@ export default function MapScreen() {
 	};
 
 	const handleStartCapture = () => {
-		// LocationDetail を閉じてカメラ UI を開く
+		if (!currentDestination) return;
+		setCapturedLocationId(currentDestination.id);
 		setShowLocationDetail(false);
 		setShowCamera(true);
 		setCameraOpenedFromLocationDetail(true);
@@ -288,7 +280,13 @@ export default function MapScreen() {
 
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
-		setCapturedLocationName(currentDestination?.id || null);
+
+		// ★ ここが重要：投稿の locationId は destination.id
+		setCapturedLocationId(currentDestination?.id || null);
+
+		// 表示用に nameEn を残したければここで保持（不要なら null のままでもOK）
+		setCapturedLocationName(currentDestination?.nameEn || null);
+
 		setShowCamera(false);
 		setCameraOpenedFromLocationDetail(false);
 	};
@@ -328,7 +326,9 @@ export default function MapScreen() {
 					<div
 						className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map"
 						onClick={() => {
-							router.push('/otherpost');
+							if (!isInRange || !currentDestination) return;
+							// ★ これで OtherPost は再判定不要
+							router.push(`/otherpost?loc=${encodeURIComponent(currentDestination.id)}`);
 						}}
 					>
 						<div className="flex items-center gap-8">
@@ -336,7 +336,6 @@ export default function MapScreen() {
 								<p>{currentDestination?.nameJa}に到着しました。</p>
 								<p>みんなの投稿を見てみよう</p>
 							</div>
-							{/* ポラロイドの部分 */}
 							<div className="h-21 w-13 rounded-b-sm drop-shadow-card-small">
 								<div className="h-full w-full overflow-hidden rounded-b-sm bg-main-color pt-1.25 px-1">
 									<Image
@@ -355,7 +354,6 @@ export default function MapScreen() {
 				{isInRange && (
 					<div className="pointer-events-auto absolute left-1/2 bottom-32 w-68 h-28 -translate-x-1/2 bg-main-color rounded-xl drop-shadow-map">
 						<div className="relative h-full w-full">
-							{/* 左の写真（左右padding 16px、上に40pxはみ出し） */}
 							<div className="absolute left-4 -top-10">
 								<div className="h-20 w-20 overflow-hidden rounded-xl">
 									<Image
@@ -386,23 +384,25 @@ export default function MapScreen() {
 					</div>
 				)}
 
-				{capturedImg && (
+				{capturedImg && capturedLocationId && (
 					<div className="w-full h-full pointer-events-auto absolute top-0 left-0 bg-main-color pt-6 px-6 flex flex-col items-center">
 						<div className="flex justify-center">
 							<PhotoDecoration
 								src={capturedImg}
+								locationId={capturedLocationId}
 								onRetake={handleRetake}
 								onClose={() => {
 									setCapturedImg(null);
+									setCapturedLocationId(null);
 									setCapturedLocationName(null);
 								}}
 								onComplete={() => {
 									setCapturedImg(null);
+									setCapturedLocationId(null);
 									setCapturedLocationName(null);
 									setShowCamera(false);
 									setShowLocationDetail(false);
 								}}
-								locationName={capturedLocationName ?? undefined}
 							/>
 						</div>
 					</div>

@@ -14,13 +14,15 @@ type Props = {
 	onRetake: () => void;
 	onClose?: () => void;
 	onComplete?: () => void;
-	locationName?: string;
+	locationName?: string; // 表示用（任意）
+	locationId: string; // ★ 絞り込み用（必須）
 };
 
 type PostDoc = {
 	imageUrl: string;
 	createdAt: ReturnType<typeof serverTimestamp>;
 	comment?: string;
+	locationId: string;
 	locationName?: string;
 	uid?: string;
 };
@@ -39,7 +41,6 @@ async function loadHtmlImage(src: string): Promise<HTMLImageElement> {
 	return img;
 }
 
-// object-cover を canvas で再現
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, dw: number, dh: number) {
 	const iw = img.naturalWidth;
 	const ih = img.naturalHeight;
@@ -70,7 +71,6 @@ async function composeBlob(baseDataUrl: string, stamps: Stamp[]): Promise<Blob> 
 		const x = clamp01(s.x) * OUT_W;
 		const y = clamp01(s.y) * OUT_H;
 
-		// スタンプ基準サイズ（必要なら調整）
 		const baseSize = OUT_W * 0.18;
 		const w = baseSize * s.scale;
 		const h = baseSize * s.scale;
@@ -89,14 +89,19 @@ async function composeBlob(baseDataUrl: string, stamps: Stamp[]): Promise<Blob> 
 	return blob;
 }
 
-export default function WriteComment({ src, stamps, onClose, onComplete, locationName }: Props) {
+export default function WriteComment({
+	src,
+	stamps,
+	onClose,
+	onComplete,
+	locationName,
+	locationId,
+}: Props) {
 	const [comment, setComment] = useState('');
 	const [loading, setLoading] = useState(false);
 
-	// ★ プレビュー用（スタンプ合成後の画像URL）
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-	// ★ WriteComment表示時点で合成してプレビューに反映
 	useEffect(() => {
 		let cancelled = false;
 		let objectUrl: string | null = null;
@@ -126,11 +131,14 @@ export default function WriteComment({ src, stamps, onClose, onComplete, locatio
 			alert('ログイン状態が確認できません');
 			return;
 		}
+		if (!locationId) {
+			alert('locationId がありません');
+			return;
+		}
 
 		try {
 			setLoading(true);
 
-			// ★ 合成してアップロード
 			const blob = await composeBlob(src, stamps);
 
 			const fileName = `${crypto.randomUUID()}.jpg`;
@@ -143,10 +151,14 @@ export default function WriteComment({ src, stamps, onClose, onComplete, locatio
 				imageUrl,
 				createdAt: serverTimestamp(),
 				uid,
+				locationId,
 			};
 
+			if (locationName) {
+				docData.locationName = locationName;
+			}
+
 			if (comment.trim() !== '') docData.comment = comment;
-			if (locationName) docData.locationName = locationName;
 
 			await addDoc(collection(db, 'posts'), docData);
 
@@ -184,7 +196,6 @@ export default function WriteComment({ src, stamps, onClose, onComplete, locatio
 			<div className="w-64.5 h-102.5 bg-main-color drop-shadow-card rounded-b-md mt-31">
 				<div className="w-56 h-74 overflow-hidden bg-white relative top-6.5 left-4.5">
 					<div className="absolute inset-0">
-						{/* ★ ここがスタンプ合成後プレビュー */}
 						<Image
 							src={previewUrl ?? src}
 							alt="decorated"
