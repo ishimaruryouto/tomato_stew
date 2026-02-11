@@ -187,13 +187,13 @@ export default function OtherPost() {
 								onClick={() => setModalData(p)}
 							>
 								<div className="px-2 pt-3">
-									<Image
+									{/* <Image
 										src="/img/YEAH!.png"
 										alt="YEAH!"
 										width={90}
 										height={65}
 										className="absolute z-20"
-									/>
+									/> */}
 									<Image
 										src={p.src}
 										alt="photo"

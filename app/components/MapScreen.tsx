@@ -68,7 +68,9 @@ export default function MapScreen() {
 	const mapRef = useRef<mapboxgl.Map | null>(null);
 	const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 	const destinationMarkerRef = useRef<mapboxgl.Marker | null>(null);
-	const watchIdRef = useRef<number | null>(null);
+
+	const pollIdRef = useRef<number | null>(null);
+	const pollingRef = useRef(false);
 
 	const [isInRange, setIsInRange] = useState(false);
 	const [locationError, setLocationError] = useState<string>('');
@@ -185,50 +187,45 @@ export default function MapScreen() {
 				}
 
 				const options: PositionOptions = {
-					enableHighAccuracy: false,
+					enableHighAccuracy: true,
 					timeout: 30000,
-					maximumAge: 5000,
+					maximumAge: 0,
 				};
 
-				navigator.geolocation.getCurrentPosition(
-					(position) => {
-						const location: [number, number] = [
-							position.coords.longitude,
-							position.coords.latitude,
-						];
-						updateUserLocation(location);
-						setLocationError('');
-					},
-					(error) => {
-						console.warn('位置情報の取得に失敗:', error);
-						setLocationError(
-							'ブラウザの位置情報取得に失敗しました。位置情報の使用を許可してください。',
-						);
-					},
-					options,
-				);
+				const success = (position: GeolocationPosition) => {
+					const location: [number, number] = [position.coords.longitude, position.coords.latitude];
+					updateUserLocation(location);
+					setLocationError('');
+				};
 
-				const watchId = navigator.geolocation.watchPosition(
-					(position) => {
-						const location: [number, number] = [
-							position.coords.longitude,
-							position.coords.latitude,
-						];
-						updateUserLocation(location);
-					},
-					(error) => {
-						console.warn('位置情報の監視に失敗:', error);
-					},
-					options,
-				);
+				const fail = (error: GeolocationPositionError) => {
+					console.warn('位置情報の取得に失敗:', error);
+					setLocationError(
+						'ブラウザの位置情報取得に失敗しました。位置情報の使用を許可してください。',
+					);
+				};
 
-				return watchId;
+				navigator.geolocation.getCurrentPosition(success, fail, options);
+
+				pollIdRef.current = window.setInterval(() => {
+					if (pollingRef.current) return;
+					pollingRef.current = true;
+
+					navigator.geolocation.getCurrentPosition(
+						(pos) => {
+							pollingRef.current = false;
+							success(pos);
+						},
+						(err) => {
+							pollingRef.current = false;
+							fail(err);
+						},
+						options,
+					);
+				}, 3000);
 			};
 
-			const watchId = getLocation();
-			if (watchId !== undefined) {
-				watchIdRef.current = watchId;
-			}
+			getLocation();
 		});
 
 		return () => {
@@ -240,10 +237,13 @@ export default function MapScreen() {
 				destinationMarkerRef.current.remove();
 				destinationMarkerRef.current = null;
 			}
-			if (watchIdRef.current !== null) {
-				navigator.geolocation.clearWatch(watchIdRef.current);
-				watchIdRef.current = null;
+
+			if (pollIdRef.current !== null) {
+				clearInterval(pollIdRef.current);
+				pollIdRef.current = null;
 			}
+			pollingRef.current = false;
+
 			if (mapRef.current) {
 				mapRef.current.remove();
 				mapRef.current = null;
@@ -281,10 +281,8 @@ export default function MapScreen() {
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
 
-		// ★ ここが重要：投稿の locationId は destination.id
 		setCapturedLocationId(currentDestination?.id || null);
 
-		// 表示用に nameEn を残したければここで保持（不要なら null のままでもOK）
 		setCapturedLocationName(currentDestination?.nameEn || null);
 
 		setShowCamera(false);
@@ -327,7 +325,6 @@ export default function MapScreen() {
 						className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map"
 						onClick={() => {
 							if (!isInRange || !currentDestination) return;
-							// ★ これで OtherPost は再判定不要
 							router.push(`/otherpost?loc=${encodeURIComponent(currentDestination.id)}`);
 						}}
 					>
