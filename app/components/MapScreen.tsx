@@ -472,7 +472,7 @@ import { auth } from '../firebase/firebase';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
-const DEST_RADIUS_IN_KM = 0.3;
+const DEST_RADIUS_IN_KM = 0.2;
 const DEFAULT_ZOOM = 16;
 
 // ✅ 追加：デモ用env（範囲外固定）
@@ -533,7 +533,9 @@ export default function MapScreen() {
 	const mapRef = useRef<mapboxgl.Map | null>(null);
 	const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 	const destinationMarkerRef = useRef<mapboxgl.Marker | null>(null);
-	const watchIdRef = useRef<number | null>(null);
+
+	const pollIdRef = useRef<number | null>(null);
+	const pollingRef = useRef(false);
 
 	const [isInRange, setIsInRange] = useState(false);
 	const [locationError, setLocationError] = useState<string>('');
@@ -541,12 +543,16 @@ export default function MapScreen() {
 
 	const [showCamera, setShowCamera] = useState(false);
 	const [capturedImg, setCapturedImg] = useState<string | null>(null);
+
+	const [capturedLocationId, setCapturedLocationId] = useState<string | null>(null);
 	const [capturedLocationName, setCapturedLocationName] = useState<string | null>(null);
+
 	const [showLocationDetail, setShowLocationDetail] = useState(false);
 	const [cameraOpenedFromLocationDetail, setCameraOpenedFromLocationDetail] = useState(false);
 
 	const [currentDestination, setCurrentDestination] = useState<Destination | null>(null);
 
+<<<<<<< HEAD
 	// ✅ 追加：今ログインしてるUID（デモ判定に使う）
 	const [currentUid, setCurrentUid] = useState<string>('');
 
@@ -562,6 +568,8 @@ export default function MapScreen() {
 		DEMO_OUT_UID !== '' && currentUid !== '' && currentUid === DEMO_OUT_UID && DEMO_OUT_LOCATION !== null;
 
 	// Map初期化
+=======
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 	useEffect(() => {
 		if (mapRef.current || !mapContainerRef.current) return;
 
@@ -587,7 +595,13 @@ export default function MapScreen() {
 			destinationCircles.forEach(({ dest, circle }) => {
 				const center: [number, number] = [dest.lng, dest.lat];
 
+<<<<<<< HEAD
 				destinationMarkerRef.current = new mapboxgl.Marker({ color: '#FFD600' })
+=======
+				destinationMarkerRef.current = new mapboxgl.Marker({
+					color: '#FFD600',
+				})
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 					.setLngLat(center)
 					.addTo(map);
 
@@ -642,7 +656,13 @@ export default function MapScreen() {
 				if (userMarkerRef.current) {
 					userMarkerRef.current.setLngLat(location);
 				} else {
+<<<<<<< HEAD
 					userMarkerRef.current = new mapboxgl.Marker({ color: '#FF0000' })
+=======
+					userMarkerRef.current = new mapboxgl.Marker({
+						color: '#FF0000',
+					})
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 						.setLngLat(location)
 						.addTo(map);
 				}
@@ -660,11 +680,12 @@ export default function MapScreen() {
 				}
 
 				const options: PositionOptions = {
-					enableHighAccuracy: false,
+					enableHighAccuracy: true,
 					timeout: 30000,
-					maximumAge: 5000,
+					maximumAge: 0,
 				};
 
+<<<<<<< HEAD
 				navigator.geolocation.getCurrentPosition(
 					(position) => {
 						const loc: [number, number] = [position.coords.longitude, position.coords.latitude];
@@ -688,12 +709,47 @@ export default function MapScreen() {
 					},
 					options,
 				);
+=======
+				const success = (position: GeolocationPosition) => {
+					const location: [number, number] = [position.coords.longitude, position.coords.latitude];
+					updateUserLocation(location);
+					setLocationError('');
+				};
 
-				return watchId;
+				const fail = (error: GeolocationPositionError) => {
+					console.warn('位置情報の取得に失敗:', error);
+					setLocationError(
+						'ブラウザの位置情報取得に失敗しました。位置情報の使用を許可してください。',
+					);
+				};
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
+
+				navigator.geolocation.getCurrentPosition(success, fail, options);
+
+				pollIdRef.current = window.setInterval(() => {
+					if (pollingRef.current) return;
+					pollingRef.current = true;
+
+					navigator.geolocation.getCurrentPosition(
+						(pos) => {
+							pollingRef.current = false;
+							success(pos);
+						},
+						(err) => {
+							pollingRef.current = false;
+							fail(err);
+						},
+						options,
+					);
+				}, 3000);
 			};
 
+<<<<<<< HEAD
 			const watchId = getLocation();
 			if (watchId !== undefined) watchIdRef.current = watchId;
+=======
+			getLocation();
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 		});
 
 		return () => {
@@ -705,10 +761,13 @@ export default function MapScreen() {
 				destinationMarkerRef.current.remove();
 				destinationMarkerRef.current = null;
 			}
-			if (watchIdRef.current !== null) {
-				navigator.geolocation.clearWatch(watchIdRef.current);
-				watchIdRef.current = null;
+
+			if (pollIdRef.current !== null) {
+				clearInterval(pollIdRef.current);
+				pollIdRef.current = null;
 			}
+			pollingRef.current = false;
+
 			if (mapRef.current) {
 				mapRef.current.remove();
 				mapRef.current = null;
@@ -716,7 +775,6 @@ export default function MapScreen() {
 		};
 	}, [isDemoOutUser]);
 
-	// ボタン系
 	const handlePhotoButton = () => {
 		if (!isInRange) return;
 		setCapturedImg(null);
@@ -727,6 +785,11 @@ export default function MapScreen() {
 	const handleCloseLocationDetail = () => setShowLocationDetail(false);
 
 	const handleStartCapture = () => {
+<<<<<<< HEAD
+=======
+		if (!currentDestination) return;
+		setCapturedLocationId(currentDestination.id);
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 		setShowLocationDetail(false);
 		setShowCamera(true);
 		setCameraOpenedFromLocationDetail(true);
@@ -742,7 +805,11 @@ export default function MapScreen() {
 
 	const handleCapture = (dataUrl: string) => {
 		setCapturedImg(dataUrl);
-		setCapturedLocationName(currentDestination?.id || null);
+
+		setCapturedLocationId(currentDestination?.id || null);
+
+		setCapturedLocationName(currentDestination?.nameEn || null);
+
 		setShowCamera(false);
 		setCameraOpenedFromLocationDetail(false);
 	};
@@ -775,14 +842,24 @@ export default function MapScreen() {
 				{isInRange && (
 					<div
 						className="pointer-events-auto absolute right-0 top-40 w-80 h-25 rounded-l-xl bg-white/95 px-3 drop-shadow-map"
+<<<<<<< HEAD
 						onClick={() => router.push('/otherpost')}
+=======
+						onClick={() => {
+							if (!isInRange || !currentDestination) return;
+							router.push(`/otherpost?loc=${encodeURIComponent(currentDestination.id)}`);
+						}}
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 					>
 						<div className="flex items-center gap-8">
 							<div className="flex-col text-base .text-main-color h-25 justify-center flex">
 								<p>{currentDestination?.nameJa}に到着しました。</p>
 								<p>みんなの投稿を見てみよう</p>
 							</div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 89c8770680729b12d9278ad71803d1327b3ec39f
 							<div className="h-21 w-13 rounded-b-sm drop-shadow-card-small">
 								<div className="h-full w-full overflow-hidden rounded-b-sm bg-main-color pt-1.25 px-1">
 									<Image src="/img/group_photo.webp" alt="group_photo" width={62} height={45} className="object-cover" />
@@ -819,23 +896,25 @@ export default function MapScreen() {
 					</div>
 				)}
 
-				{capturedImg && (
+				{capturedImg && capturedLocationId && (
 					<div className="w-full h-full pointer-events-auto absolute top-0 left-0 bg-main-color pt-6 px-6 flex flex-col items-center">
 						<div className="flex justify-center">
 							<PhotoDecoration
 								src={capturedImg}
+								locationId={capturedLocationId}
 								onRetake={handleRetake}
 								onClose={() => {
 									setCapturedImg(null);
+									setCapturedLocationId(null);
 									setCapturedLocationName(null);
 								}}
 								onComplete={() => {
 									setCapturedImg(null);
+									setCapturedLocationId(null);
 									setCapturedLocationName(null);
 									setShowCamera(false);
 									setShowLocationDetail(false);
 								}}
-								locationName={capturedLocationName ?? undefined}
 							/>
 						</div>
 					</div>
