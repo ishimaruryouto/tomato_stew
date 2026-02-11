@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../firebase/firebase';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { collection, onSnapshot, orderBy, query, where, Timestamp } from 'firebase/firestore';
 
@@ -35,13 +35,40 @@ const DEST_META: Record<string, { ja: string; en: string; img: string }> = {
 export default function OtherPost() {
 	const router = useRouter();
 	const sp = useSearchParams();
-	const loc = sp.get('loc'); // MapScreen から渡される locationId
+	const loc = sp.get('loc');
 
 	const [loginUser, setLoginUser] = useState<{ name: string; id: string } | null>(null);
 	const [modalData, setModalData] = useState<PhotoData | null>(null);
 	const closeModal = () => setModalData(null);
 
 	const [photos, setPhotos] = useState<PhotoData[]>([]);
+
+	const PAGE_SIZE = 4;
+
+	const pages = useMemo(() => {
+		const res: PhotoData[][] = [];
+		for (let i = 0; i < photos.length; i += PAGE_SIZE) {
+			res.push(photos.slice(i, i + PAGE_SIZE));
+		}
+		return res;
+	}, [photos]);
+
+	const albumRef = useRef<HTMLDivElement | null>(null);
+	const [pageIndex, setPageIndex] = useState(0);
+	const totalPages = pages.length;
+
+	const handleAlbumScroll = () => {
+		const el = albumRef.current;
+		if (!el) return;
+
+		const w = el.clientWidth || 1;
+		const raw = Math.round(el.scrollLeft / w);
+
+		const max = Math.max(0, totalPages - 1);
+		const idx = Math.min(max, Math.max(0, raw));
+
+		setPageIndex((cur) => (cur === idx ? cur : idx));
+	};
 
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -57,14 +84,12 @@ export default function OtherPost() {
 		return () => unsubscribe();
 	}, []);
 
-	// Firestore から取得（再判定なし）
 	useEffect(() => {
 		if (!loc) {
 			router.replace('/');
 			return;
 		}
 
-		// where + orderBy なので composite index が必要になる（初回だけ）
 		const q = query(
 			collection(db, 'posts'),
 			where('locationId', '==', loc),
@@ -92,10 +117,20 @@ export default function OtherPost() {
 				});
 
 				setPhotos(list);
+
+				setPageIndex((cur) => (cur === 0 ? cur : 0));
+				requestAnimationFrame(() => {
+					albumRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+				});
 			},
 			(e) => {
 				console.error('onSnapshot error:', e);
 				setPhotos([]);
+
+				setPageIndex((cur) => (cur === 0 ? cur : 0));
+				requestAnimationFrame(() => {
+					albumRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+				});
 			},
 		);
 
@@ -179,36 +214,49 @@ export default function OtherPost() {
 					<div className="absolute top-0 left-15 w-78.75 h-103.75 bg-[#F2EDED] z-0"></div>
 					<div className="absolute top-0 left-13 w-78.75 h-103.75 bg-[#D9D9D9] z-10"></div>
 
-					<div className="absolute top-0 left-11 w-78.75 h-103.75 bg-[#F9F9F9] z-20 grid grid-cols-2 gap-5 place-items-center ml-2">
-						{photos.map((p, i) => (
-							<div
-								key={i}
-								className="w-28 h-44.5 bg-[#FEFEFE] rounded-bl-[4px] rounded-br-[4px] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] cursor-pointer"
-								onClick={() => setModalData(p)}
-							>
-								<div className="px-2 pt-3">
-									{/* <Image
-										src="/img/YEAH!.png"
-										alt="YEAH!"
-										width={90}
-										height={65}
-										className="absolute z-20"
-									/> */}
-									<Image
-										src={p.src}
-										alt="photo"
-										width={96}
-										height={128}
-										className="absolute z-10"
-										unoptimized
-									/>
+					<div className="absolute top-0 left-11 w-78.75 h-103.75 bg-[#F9F9F9] z-20 ml-2 relative">
+						<div
+							ref={albumRef}
+							onScroll={handleAlbumScroll}
+							className="w-full h-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth"
+							style={{ WebkitOverflowScrolling: 'touch' }}
+						>
+							{pages.map((page, pi) => (
+								<div
+									key={pi}
+									className="w-full h-full shrink-0 snap-start grid grid-cols-2 gap-5 place-items-center"
+								>
+									{page.map((p, i) => (
+										<div
+											key={`${pi}-${i}`}
+											className="w-28 h-44.5 bg-[#FEFEFE] rounded-bl-[4px] rounded-br-[4px] drop-shadow-[0_2px_4px_rgba(34,34,34,0.30)] cursor-pointer"
+											onClick={() => setModalData(p)}
+										>
+											<div className="px-2 pt-3">
+												<Image
+													src={p.src}
+													alt="photo"
+													width={96}
+													height={128}
+													className="absolute z-10"
+													unoptimized
+												/>
+											</div>
+										</div>
+									))}
 								</div>
+							))}
+						</div>
+
+						{pages.length >= 2 && (
+							<div className="absolute left-1/2 -translate-x-1/2 -bottom-6 text-sm text-gray-500">
+								{pageIndex + 1}/{pages.length}
 							</div>
-						))}
+						)}
 					</div>
 				</div>
 
-				<div className="px-6 mt-155.5">
+				<div className="px-6 mt-30">
 					<div className="relative w-full h-28 border border-[#FFCC01] rounded-xl drop-shadow-[0_2px_4px_rgba(34,34,34,0.20)]">
 						<div className="flex items-center justify-end pt-2 pr-12">
 							<div className="absolute top-[-30%] left-[15] h-20 w-20 overflow-hidden rounded-xl">
